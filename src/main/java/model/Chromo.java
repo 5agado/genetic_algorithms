@@ -1,6 +1,5 @@
-package edu.sagado.genAlg;
+package model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -12,41 +11,30 @@ public class Chromo<T> {
 	private double fitness;
 	
 	/**
-	 * Create a new Chromo described by genes, with the specific fitness
-	 * @param genes the ArrayList to be copied as the new Chromo
-	 * @param fitness the fitness of the new Chromo
+	 * Create a new Chromo described by genes and with the specified fitness
+	 * @param genes the list of genes that will describe the new Chromo
+	 * @param fitness the current fitness of the new Chromo
 	 */
 	public Chromo(List<T> genes, double fitness){
 		setGenes(genes);
 		setFitness(fitness);
 	}
 	
-	/**
-	 * 
-	 * @return the genes of this Chromo
-	 */
+	//List<T>) ((ArrayList<T>) genes).clone()
+	//What about implementing a deep copy mechanism for the genes??
+	
 	public List<T> getGenes (){
-		return (List<T>) ((ArrayList) genes).clone();
+		return genes;
 	} 
 	
-	/**
-	 * @param genes the genes to set
-	 */
 	public void setGenes(List<T> genes) {
-		this.genes = (List<T>) ((ArrayList) genes).clone();
+		this.genes = genes;
 	}
 	
-	/**
-	 * @return the fitness
-	 */
 	public double getFitness() {
 		return fitness;
 	}
 	
-	/**
-	 * 
-	 * @param fitness
-	 */
 	public void setFitness(double fitness){
 		this.fitness = fitness;
 	}	

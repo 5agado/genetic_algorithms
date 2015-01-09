@@ -1,4 +1,4 @@
-package edu.sagado.genAlg;
+package model;
 
 import java.util.List;
 import java.util.Random;
