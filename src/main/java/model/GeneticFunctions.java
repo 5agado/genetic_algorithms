@@ -18,7 +18,7 @@ public class GeneticFunctions {
 		
 		@Override
 		public Chromo<Integer> apply(Random rand) {
-			List<Integer> genes = IntStream.range(1, GENE_LEN)
+			List<Integer> genes = IntStream.range(0, GENE_LEN)
 				.map(a -> rand.nextInt(GENE_BOUND))
 				.boxed()
 				.collect(Collectors.toList());

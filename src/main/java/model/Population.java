@@ -9,13 +9,15 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 /**
- * The Population class holds the array of chromos and run
- * the properly update operations on it
+ * A genetic population and related behavior. 
+ * The population is a list of @see src.main.java.model.Chromo.
+ * The population behavior is defined by three functions: how a new chromo is generated, 
+ * how single fitness is computed and how genes mutate.
  *
  */
 public class Population <T> {
-    private final double CROSSOVER_RATE = 0.5;
-    private final int NUM_ELITE = 2;
+    private final double CROSSOVER_RATE;
+    private final int NUM_ELITE;
 	
     private Random rand = new Random(); 
 	
@@ -29,20 +31,21 @@ public class Population <T> {
 	private BiFunction<Random, Chromo<T>, Chromo<T>> mutateGenes;
 	
 	/**
-	 * Initialize a new Population
+	 * Constructs and initialize a new genetic population
 	 * 
-	 * standard values:
-	 * 	CROSSOVER_RATE = {@value #CROSSOVER_RATE}
-	 * 	NUM_ELITE = {@value #NUM_ELITE}
-	 * @param size number of Chromos in the population
+	 * @param size number of @see src.main.java.model.Chromo in the population
+	 * @param crossoverRate
+	 * @param numElite
 	 * @param makeRandomChromo function
 	 * @param computeFitness function
 	 * @param mutateGenes function
 	 */
-	public Population (int size,
+	public Population (int size, double crossoverRate, int numElite,
 			Function<Random, Chromo<T>> makeRandomChromo,
 			Function<Chromo<T>, Double> computeFitness,
 			BiFunction<Random, Chromo<T>, Chromo<T>> mutateGenes){	
+		this.CROSSOVER_RATE = crossoverRate;
+		this.NUM_ELITE = numElite;
 		this.size = size;
 		individuals = new ArrayList<Chromo<T>>(this.size);
 		this.makeRandomChromo = makeRandomChromo;
@@ -58,16 +61,15 @@ public class Population <T> {
 	}
 
 	/**
-	 * Run the all genetic algorithm phases, that are:
+	 * Run the genetic algorithm steps:
 	 * 1.Maintain {@value #NUM_ELITE} individuals;
 	 * 		define a new population by
 	 * 2.Pick up two offspring with roulette selection;
 	 * 3.Crossover these two offspring;
 	 * 4.Mutate and add them to the new population;
 	 * 5.Calculate and set the fitness values of the actual population;
-	 * @return if the algorithms has performed correctly 
 	 */
-	public boolean newGeneration(){		
+	public void newGeneration(){		
 		List<Chromo<T>> freshPop = new ArrayList<Chromo<T>>(size);
 		
 		freshPop.addAll(getElite());
@@ -80,13 +82,14 @@ public class Population <T> {
 	    	crossOver(offspring1, offspring2);
 	    	
 	    	freshPop.add(mutateGenes.apply(rand, offspring1));
+	    	if (freshPop.size() == size)
+	    		break;
 	    	freshPop.add(mutateGenes.apply(rand, offspring2));
 		}
 		
-		individuals = freshPop;
+		this.individuals = freshPop;
 		setFitnessValues();
-		generation_num++;
-		return true;
+		this.generation_num++;
 	} 
 	
 	private void setFitnessValues() {
@@ -111,11 +114,12 @@ public class Population <T> {
 		for (int i=0; i<size; i++){
 			fitnessSoFar += individuals.get(i).getFitness();
 			if (fitnessSoFar >= slice){
-				selected = new Chromo<>(individuals.get(i).getGenes(), 0);
+				selected = new Chromo<>(individuals.get(i).getGenes(), individuals.get(i).getFitness());
+				break;
 			}
 		}
 		
-		return selected;		
+		return selected;	
 	}
 	
 	private void crossOver(Chromo<T> offspring1, Chromo<T> offspring2){
@@ -145,25 +149,24 @@ public class Population <T> {
 	}
 	
 	public Chromo<T> getRandomChromoFromPopulation(){
-		return new Chromo<>(individuals.get(rand.nextInt(size)).getGenes(), 0);
+		Chromo<T> selected = individuals.get(rand.nextInt(size));
+		return new Chromo<>(selected.getGenes(), selected.getFitness());
 	}	
 
-	//What about implementing a deep copy mechanism for the genes??
-	
 	public List<Chromo<T>> getIndividuals() {
 		return individuals.stream()
-				.map(chromo -> new Chromo<>(chromo.getGenes(), 0))
+				.map(chromo -> new Chromo<>(chromo.getGenes(), chromo.getFitness()))
 				.collect(Collectors.toList());
 	}
 
 	public void setIndividuals(List<Chromo<T>> individuals) {
 		this.individuals = individuals.stream()
-				.map(chromo -> new Chromo<>(chromo.getGenes(), 0))
+				.map(chromo -> new Chromo<>(chromo.getGenes(), chromo.getFitness()))
 				.collect(Collectors.toList());
 	}
 	
-	public int getGeneration_num() {
-		return generation_num;
+	public int getNumberOfGenerations() {
+		return this.generation_num;
 	}
 
 	public Chromo<T> getFittestChromo() {
